@@ -3,18 +3,16 @@
 #include <QTime>
 #include <QtCore>
 
-#include<opencv2/core/core.hpp>
-#include<opencv2/highgui/highgui.hpp>
-#include<opencv2/imgproc/imgproc.hpp>
+#include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/objdetect/objdetect.hpp>
 #include <opencv2/ml/ml.hpp>
 #include <opencv2/ml.hpp>
 
 #include <stdio.h>
 #include <stdlib.h>
-#include<iostream>
-
-//using namespace std;
+#include <iostream>
 
 #define characterMinWidthThreshold 9
 #define characterMaxWidthThreshold 50
@@ -35,7 +33,6 @@ bool IsGrayImage( cv::Mat img ) // returns true if the given 3 channel image is 
     absdiff( bgr[0], bgr[2], dst );
     return !countNonZero( dst );
 }
-
 void Preprocess(cv::Mat &image, cv::Mat &invertedGrayImage){
 //    convert to gray, resize, invert, detect if image is colored so plate detection is needed, padding
 
@@ -56,7 +53,6 @@ void Preprocess(cv::Mat &image, cv::Mat &invertedGrayImage){
     copyMakeBorder( invertedGrayImage, invertedGrayImage, 10, 10, 10, 10, cv::BORDER_CONSTANT, cv::Scalar( 0,0,0) );
 
 }
-
 void FindContoursOfPlate(cv::Mat &invertedGrayImage, std::vector<cv::Rect> &selectedRect, std::vector<cv::Rect> &corruptedcharacterRect){
 
     cv::Mat imageCanny;
@@ -159,53 +155,11 @@ void FindContoursOfPlate(cv::Mat &invertedGrayImage, std::vector<cv::Rect> &sele
                 }
             }
 
-//            int countFalses = 0;
-//            save regions destroyed in thresholded image
-//            for ( int contourRectSaveIndex = 0 ; contourRectSaveIndex < contourRect.width; contourRectSaveIndex++)
-//            {
-//                if ( contourRectSave[contourRectSaveIndex] == false && countFalses < characterMinWidthThreshold )
-//                    countFalses++;
-//                if ( contourRectSave[contourRectSaveIndex] == true && countFalses >= characterMinWidthThreshold )
-//                {
-//                    // here we have a region bigger than a character which is not detected as a countour in thresholded image
-//                    Rect tmpRect;
-//                    tmpRect.x = contourRect.x + contourRectSaveIndex - countFalses;
-//                    tmpRect.width = countFalses;
-//                    tmpRect.height = contourRect.height;
-//                    tmpRect.y = contourRect.height;
-//                    if ( countFalses > characterMaxWidthThreshold )
-//                        corruptedcharacterRect.push_back(tmpRect);
-//                    else
-//                        selectedRect.push_back(tmpRect);
 
-//                }
-//                if ( contourRectSave[contourRectSaveIndex] == true && countFalses < characterMinWidthThreshold )
-//                {
-//                    countFalses = 0;
-//                }
-//                if ( contourRectSave[contourRectSaveIndex] == false && countFalses >= characterMinWidthThreshold)
-//                {
-//                    countFalses++;
-//                }
-//                if ( contourRectSaveIndex == contourRect.width-1 && countFalses >= characterMinWidthThreshold )
-//                {
-//                    Rect tmpRect;
-//                    tmpRect.x = contourRect.x + contourRectSaveIndex - countFalses;
-//                    tmpRect.width = countFalses;
-//                    tmpRect.height = contourRect.height;
-//                    tmpRect.y = contourRect.height;
-//                    if ( countFalses > characterMaxWidthThreshold )
-//                        corruptedcharacterRect.push_back(tmpRect);
-//                    else
-//                        selectedRect.push_back(tmpRect);
-//                }
-
-//            }
         }
 
     }
 }
-
 void ModifyRectRegionSize(cv::Mat &image){
     if ( image.cols >= image.rows )
     {
@@ -218,12 +172,8 @@ void ModifyRectRegionSize(cv::Mat &image){
         int pad = (image.rows - image.cols)/2;
         cv::copyMakeBorder( image, image, 0, 0, pad, image.rows-image.cols-pad, cv::BORDER_CONSTANT, cv::Scalar( 0,0,0) );
         resize( image, image, cv::Size(sizeOfTrainImage,sizeOfTrainImage));
-
     }
-
 }
-
-
 void ConvertVectortoMatrix(std::vector<std::vector<float> > &descriptor, cv::Mat &descriptorMat)
 {
 
@@ -234,9 +184,7 @@ void ConvertVectortoMatrix(std::vector<std::vector<float> > &descriptor, cv::Mat
             descriptorMat.at<float>(i,j) = descriptor[i][j];
         }
     }
-
 }
-
 void GetSVMParams(cv::ml::SVM *svm)
 {
     std::cout << "Kernel type     : " << svm->getKernelType() << std::endl;
@@ -246,7 +194,6 @@ void GetSVMParams(cv::ml::SVM *svm)
     std::cout << "Nu              : " << svm->getNu() << std::endl;
     std::cout << "Gamma           : " << svm->getGamma() << std::endl;
 }
-
 void SVMtrainAndTest(cv::Mat &trainMat,std::vector<int> &trainLabels, cv::Mat &testResponse,cv::Mat &testMat){
 
     cv::Ptr<cv::ml::SVM> svm = cv::ml::SVM::create();
@@ -259,9 +206,7 @@ void SVMtrainAndTest(cv::Mat &trainMat,std::vector<int> &trainLabels, cv::Mat &t
     svm->save("model4.yml");
     svm->predict(testMat, testResponse);
     GetSVMParams(svm);
-
 }
-
 void SVMTest(cv::Mat &testResponse,cv::Mat &testMat)
 {
     cv::Ptr<cv::ml::SVM> svm = cv::ml::SVM::create();
@@ -270,7 +215,6 @@ void SVMTest(cv::Mat &testResponse,cv::Mat &testMat)
     GetSVMParams(svm);
 
 }
-
 //    here we write a results directory, which plates and their results are stored
 void WriteTheResults(std::vector<cv::String> &testFileNames, std::vector<cv::Rect> &testSetSelectedRect, std::vector<cv::Rect> &testSetCorruptedRect, cv::Mat &testResponse, std::vector<int> &testIndexSelected, std::vector<int> &testIndexCorrupted)
 {
@@ -298,15 +242,11 @@ void WriteTheResults(std::vector<cv::String> &testFileNames, std::vector<cv::Rec
                 resRect.height=30;
                 resRect.x = resRect.x - 10;
                 thisFrameCorruptedRects.push_back(resRect);
-
-
             }
             else
                 continue;
 
         }
-
-        //
         cv::Rect x,y;
         cv::Rect z = x & y;
 //        std::vector<bool> thisFrameCWrite, thisFramePWrite;
@@ -320,20 +260,9 @@ void WriteTheResults(std::vector<cv::String> &testFileNames, std::vector<cv::Rec
                 cv::Rect r4 = r1 | r2;
                 if ( r3.area() > 0 )
                     rectangle(testImage, r4 , cv::Scalar(0, 0, 255), 1);
-//                if ( r3.area() == r1.area())
-//                {
-//                    rectangle(testImage, r2, Scalar(0, 0, 255), 1);
-//                }
-//                if ( r3.area() == r2.area())
-//                {
-//                    rectangle(testImage, r1, Scalar(0, 0, 255), 1);
-
-//                }
-
             }
 
         }
-
         for ( int rectSIndex = 0; rectSIndex < testIndexSelected.size() ; rectSIndex++ )
         {
             if ( testIndexSelected[rectSIndex] == static_cast<int>(filenameIndex) )
@@ -350,25 +279,17 @@ void WriteTheResults(std::vector<cv::String> &testFileNames, std::vector<cv::Rec
                     thisFrameCorruptedRects.push_back(resRect);
                     cv::rectangle(testImage, resRect, cv::Scalar(0, 0, 255), 1);
                 }
-//                thisFrameSelectedRects.push_back(resRect);
-//                thisFrameResults.push_back(testResponse.at<float>(rectSIndex,0));
             }
             else
                 continue;
         }
         // make a result directory
-
         if ( !QDir("result").exists())
             QDir().mkdir("result");
 
         std::string fileWriteName = "./result/result_" + std::to_string(filenameIndex) + ".jpg";
         imwrite(fileWriteName, testImage);
     }
-
-
-
-
-
 
 }
 
